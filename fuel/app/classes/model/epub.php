@@ -47,7 +47,7 @@ class Model_Epub
 		}
 		
 		$file = $this->epub_dir . '/' . $this->filename;
-		$this->work_dir = $tmp_dir . '/' . getmypid();
+		$this->work_dir = $tmp_dir . '/' . getmypid() . '_' . $this->filename;
 		
 		if (file_exists($this->work_dir))
 		{
@@ -197,6 +197,13 @@ class Model_Epub
 				//echo "\n", $line;
 				//echo $new;
 				
+				$content .= $new;
+			}
+			else if (preg_match('|(.*)<p (.*?)>(.*)</p>(.*)|u', $line, $matches))
+			{
+				$sentense = 1;
+				$new = $matches[1] . '<p ' . $matches[2] . '><span id="kobo.' . $para
+					. '.' . $sentense .'">' . $matches[3] . '</span></p>' . $matches[4] . "\n";
 				$content .= $new;
 			}
 			else
