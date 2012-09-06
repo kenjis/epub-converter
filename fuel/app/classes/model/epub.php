@@ -226,7 +226,13 @@ class Model_Epub
 		$xhtml = $xhtml_orig;
 		//var_dump($xhtml);
 		
-		$tag_map = array('p', 'pre');
+		$tag_map = array(
+			'h1', 'h2', 'h3', 'h4', 'h5',
+			'p', 'pre',
+			'li',
+			'th', 'td',
+			'td', 'dd',
+		);
 		
 		while (preg_match('|(.*?)<(.+?)>(.*)|su', $xhtml, $matches))
 		{
