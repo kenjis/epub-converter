@@ -32,6 +32,24 @@ class Test_Model_Epub extends TestCase
 		$this->assertEquals($expected, $test);
 	}
 	
+	public function test_resize_image()
+	{
+		$file = APPPATH . 'tests/fixture/field.jpg';
+		
+		$ref = new ReflectionMethod('Model_Epub', 'resize_image');
+		$ref->setAccessible(true);
+		
+		$expected = 200;
+		$this->epub->set_image_max_size($expected);
+		$ref->invoke($this->epub, $file);
+		
+		$test = Image::sizes($file)->width;
+		$this->assertEquals($expected, $test);
+		
+		// restore fixture
+		copy($file . '.orig', $file);
+	}
+	
 	public function test_extract()
 	{
 		$test = $this->epub->extract();

@@ -17,6 +17,8 @@ class Model_Epub
 	protected $file_list;
 	protected $rootfile;
 	protected $html_filelist;
+	protected $image_filelist;
+	protected $image_max_size;
 	
 	public function set_filename($filename)
 	{
@@ -36,6 +38,14 @@ class Model_Epub
 	public function set_prefix($prefix)
 	{
 		$this->prefix = $prefix;
+	}
+	
+	public function set_image_max_size($width, $height = null)
+	{
+		$this->image_max_size = array(
+			'width' => $width,
+			'height' => $height
+		);
 	}
 	
 	public function extract()
@@ -123,6 +133,11 @@ class Model_Epub
 			{
 				$this->html_filelist[] = (string) $item->attributes()->href;
 			}
+			
+			if (substr((string) $item->attributes()->{'media-type'}, 0, 6) === 'image/')
+			{
+				$this->image_filelist[] = (string) $item->attributes()->href;
+			}
 		}
 		
 		//var_export($this->html_filelist); exit;
@@ -137,6 +152,7 @@ class Model_Epub
 		
 		$dir = dirname($this->rootfile);
 		
+		// add <span> tag
 		foreach ($this->html_filelist as $index => $file)
 		{
 			$file = $this->work_dir . '/' . $dir . '/' . $file;
@@ -145,11 +161,38 @@ class Model_Epub
 			copy($file, $file . '.orig');
 			
 			$content = $this->add_kepub_span($file);
-			
 			file_put_contents($file, $content);
 		}
 		
+		// resize images
+		if ( ! is_null($this->image_max_size))
+		{
+			foreach ($this->image_filelist as $index => $file)
+			{
+				$file = $this->work_dir . '/' . $dir . '/' . $file;
+				$this->resize_image($file);
+			}
+		}
+		
 		$this->create_zip();
+	}
+	
+	protected function resize_image($file)
+	{
+		$sizes = Image::sizes($file);
+			
+		if ($sizes->width > $this->image_max_size['width'])
+		{
+			// for debugging
+			copy($file, $file . '.orig');
+	
+			Image::load($file)
+				->resize(
+					$this->image_max_size['width'],
+					$this->image_max_size['height'],
+					true
+				)->save($file);
+		}
 	}
 	
 	protected function create_zip()

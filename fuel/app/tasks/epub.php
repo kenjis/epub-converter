@@ -52,7 +52,8 @@ EOL;
 				$epub->set_kepub_dir(DOCROOT . '/files/kepub');
 				$epub->set_filename($file);
 				$epub->set_prefix(date('Ymd_'));
-				echo 'Building... ' . $epub->get_kepub_filename() . PHP_EOL;
+				$epub->set_image_max_size(600, 800);
+				\Cli::write('Building... ' . $epub->get_kepub_filename());
 				$epub->build_kepub();
 			}
 		}
