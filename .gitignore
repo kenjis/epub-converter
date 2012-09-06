@@ -14,3 +14,8 @@ nbproject/
 .idea
 
 /fuel/app/config/crypt.php
+
+files/epub/
+files/kepub/
+fuel/app/tmp/epub/
+
