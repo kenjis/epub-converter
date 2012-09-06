@@ -37,15 +37,15 @@ EOL;
 	 */
 	public static function create_kepub()
 	{
-		$filelist = \File::read_dir(DOCROOT . '/files/epub');
-		//var_dump($filelist);
+		$filelist = \File::read_dir(DOCROOT . '/files/epub', 1);
+		//var_dump($filelist); exit;
 		
 		foreach ($filelist as $file)
 		{
 			$info = pathinfo($file);
 			//var_dump($info);
 			
-			if ($info['extension'] === 'epub')
+			if (isset($info['extension']) && $info['extension'] === 'epub')
 			{
 				$epub = new \Model_Epub();
 				$epub->set_epub_dir(DOCROOT . '/files/epub');
