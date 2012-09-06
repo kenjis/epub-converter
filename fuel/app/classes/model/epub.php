@@ -139,12 +139,14 @@ class Model_Epub
 		
 		foreach ($this->html_filelist as $index => $file)
 		{
-			$file = $dir . '/' . $file;
+			$file = $this->work_dir . '/' . $dir . '/' . $file;
 			
-			// for debug
-			copy($this->work_dir . '/' . $file, $this->work_dir. '/' . $file . '.orig');
+			// for debugging
+			copy($file, $file . '.orig');
 			
-			$this->add_kepub_span($file);
+			$content = $this->add_kepub_span($file);
+			
+			file_put_contents($file, $content);
 		}
 		
 		$this->create_zip();
@@ -174,45 +176,75 @@ class Model_Epub
 	
 	protected function add_kepub_span($file)
 	{
-		$file = $this->work_dir . '/' . $file;
-		$lines = file($file);
-		//var_dump($lines); exit;
-		
+		$xhtml_orig = file_get_contents($file);
 		$content = '';
+		$para = 1;
 		
-		foreach ($lines as $index => $line)
+		$xhtml = $xhtml_orig;
+		//var_dump($xhtml);
+		
+		$tag_map = array('p', 'pre');
+		
+		while (preg_match('|(.*?)<(.+?)>(.*)|su', $xhtml, $matches))
 		{
-			//echo $line;
+			//var_dump($matches); exit;
 			
-			$para = $index + 1;
+			$before = $matches[1];
+			$tag    = $matches[2];
+			$after  = $matches[3];
 			
-			if (preg_match('|(.*)<p>(.*)</p>(.*)|u', $line, $matches))
+			//var_dump($tag);
+			
+			$content .= $before;
+			
+			// open tag
+			if (in_array($tag, $tag_map))
 			{
-				//var_dump($matches);
-				$sentense = 1;
-				
-				$new = $matches[1] . '<p><span id="kobo.' . $para . '.' . $sentense .'">'
-					. $matches[2] . '</span></p>' . $matches[3] . "\n";
-				
-				//echo "\n", $line;
-				//echo $new;
-				
-				$content .= $new;
+				$content .= '<' . $tag . '><span id="kobo.' . $para . '.1">';
+				$para++;
 			}
-			else if (preg_match('|(.*)<p (.*?)>(.*)</p>(.*)|u', $line, $matches))
+			// close tag
+			else if (substr($tag, 0, 1) === '/')
 			{
-				$sentense = 1;
-				$new = $matches[1] . '<p ' . $matches[2] . '><span id="kobo.' . $para
-					. '.' . $sentense .'">' . $matches[3] . '</span></p>' . $matches[4] . "\n";
-				$content .= $new;
+				$tag_name = substr($tag, 1);
+				
+				if (in_array($tag_name, $tag_map))
+				{
+					$content .= '</span><' . $tag . '>';
+				}
+				else
+				{
+					$content .= '<' . $tag . '>';
+				}
+			}
+			// open tag with attributes
+			else if (strpos($tag, ' ') !== false)
+			{
+				$tmp = explode(" ", $tag);
+				$tag_name = $tmp[0];
+				
+				if (in_array($tag_name, $tag_map))
+				{
+					$content .= '<' . $tag . '><span id="kobo.' . $para . '.1">';
+					$para++;
+				}
+				else
+				{
+					$content .= '<' . $tag . '>';
+				}
 			}
 			else
 			{
-				$content .= $line;
+				$content .= '<' . $tag . '>';
 			}
+			
+			
+			//var_dump($content); exit;
+			
+			$xhtml = $after;
 		}
-		
-		file_put_contents($file, $content);
+			
+		return $content . $xhtml;
 	}
 	
 	public function get_kepub_filename()

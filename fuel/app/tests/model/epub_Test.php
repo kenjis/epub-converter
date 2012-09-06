@@ -21,6 +21,17 @@ class Test_Model_Epub extends TestCase
 		unset($this->epub);
 	}
 	
+	public function test_add_kepub_span()
+	{
+		$file = APPPATH . 'tests/fixture/k12121626.html';
+		
+		$ref = new ReflectionMethod('Model_Epub', 'add_kepub_span');
+		$ref->setAccessible(true);
+		$test = $ref->invoke($this->epub, $file);
+		$expected = file_get_contents($file . '.expected');
+		$this->assertEquals($expected, $test);
+	}
+	
 	public function test_extract()
 	{
 		$test = $this->epub->extract();
