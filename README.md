@@ -1,10 +1,10 @@
 # EPUB Converter
 
-This is a CLI application to convert EPUB files for Kobo Touch.
+This program is a CLI application to convert from EPUB files to KOBO EPUB (kepub) for Kobo Touch.
 
-This program is experimental. I don't know correct kepub spec. :-)
+This is experimental. I don't know correct KOBO EPUB spec, because Rakuten does not open the spec.
 
-This was created to read EPUBs from Tatsu-zine.com <http://tatsu-zine.com/>.
+This was created to read EPUB files from Tatsu-zine.com http://tatsu-zine.com/.
 
 ## Requirements
 
