@@ -242,7 +242,7 @@ class Model_Epub
 			
 			$content .= $before;
 			
-			if ($tag === 'body')
+			if ($tag === 'body' || substr($tag, 0, 5) === 'body ')
 			{
 				$in_body = true;
 			}
