@@ -165,7 +165,7 @@ class Model_Epub
 		}
 		
 		// resize images
-		if ( ! is_null($this->image_max_size))
+		if ( ! is_null($this->image_max_size) && ! is_null($this->image_filelist))
 		{
 			foreach ($this->image_filelist as $index => $file)
 			{
@@ -219,24 +219,20 @@ class Model_Epub
 	
 	protected function add_kepub_span($file)
 	{
-		$xhtml_orig = file_get_contents($file);
+		$xhtml = file_get_contents($file);
 		$content = '';
 		$para = 1;
 		
-		$xhtml = $xhtml_orig;
 		//var_dump($xhtml);
 		
-		$tag_map = array(
-			'h1', 'h2', 'h3', 'h4', 'h5',
-			'p', 'pre',
-			'li',
-			'th', 'td',
-			'td', 'dd',
-		);
+		$in_body = false;
+		$span_open = false;
 		
 		while (preg_match('|(.*?)<(.+?)>(.*)|su', $xhtml, $matches))
 		{
-			//var_dump($matches); exit;
+			//echo 'before: ' . $matches[1] . PHP_EOL;
+			//echo 'tag: ' . $matches[2] . PHP_EOL;
+			//echo 'after: ' . mb_substr($matches[3], 0, 20) . PHP_EOL;
 			
 			$before = $matches[1];
 			$tag    = $matches[2];
@@ -246,36 +242,32 @@ class Model_Epub
 			
 			$content .= $before;
 			
-			// open tag
-			if (in_array($tag, $tag_map))
+			if ($tag === 'body')
 			{
-				$content .= '<' . $tag . '><span id="kobo.' . $para . '.1">';
-				$para++;
+				$in_body = true;
 			}
-			// close tag
-			else if (substr($tag, 0, 1) === '/')
+			
+			$next = trim($after);
+			
+			if ($in_body)
 			{
-				$tag_name = substr($tag, 1);
-				
-				if (in_array($tag_name, $tag_map))
+				if ($span_open)
 				{
 					$content .= '</span><' . $tag . '>';
+					$span_open = false;
+					
+					if ($next !== '' && $next[0] !== '<')
+					{
+						$content .= '<span class="koboSpan" id="kobo.' . $para . '.1">';
+						$para++;
+						$span_open = true;
+					}
 				}
-				else
+				else if ($next !== '' && $next[0] !== '<')
 				{
-					$content .= '<' . $tag . '>';
-				}
-			}
-			// open tag with attributes
-			else if (strpos($tag, ' ') !== false)
-			{
-				$tmp = explode(" ", $tag);
-				$tag_name = $tmp[0];
-				
-				if (in_array($tag_name, $tag_map))
-				{
-					$content .= '<' . $tag . '><span id="kobo.' . $para . '.1">';
+					$content .= '<' . $tag . '><span class="koboSpan" id="kobo.' . $para . '.1">';
 					$para++;
+					$span_open = true;
 				}
 				else
 				{
@@ -286,9 +278,6 @@ class Model_Epub
 			{
 				$content .= '<' . $tag . '>';
 			}
-			
-			
-			//var_dump($content); exit;
 			
 			$xhtml = $after;
 		}
