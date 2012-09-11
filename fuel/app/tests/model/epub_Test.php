@@ -21,13 +21,67 @@ class Test_Model_Epub extends TestCase
 		unset($this->epub);
 	}
 	
-	public function test_add_kepub_span()
+	public function test_add_KoboSpan_h3()
+	{
+		$ref = new ReflectionMethod('Model_Epub', 'add_KoboSpan');
+		$ref->setAccessible(true);
+		
+		$xhtml = '<h3 id="heading_id_3" class="sigilNotInTOC">見出し</h3>';
+		$xhtml = '<body>' . $xhtml . '</body>';
+		$test = $ref->invoke($this->epub, $xhtml);
+		$expected = '<h3 id="heading_id_3" class="sigilNotInTOC"><span class="koboSpan" id="kobo.1.1">見出し</span></h3>';
+		$expected = '<body>' . $expected . '</body>';
+		$this->assertEquals($expected, $test);
+	}
+	
+	public function test_add_KoboSpan_p()
+	{
+		$ref = new ReflectionMethod('Model_Epub', 'add_KoboSpan');
+		$ref->setAccessible(true);
+	
+		$xhtml = '<p class="c735"><span class="c736">複数の文章</span></p>';
+		$xhtml = '<body>' . $xhtml . '</body>';
+		$test = $ref->invoke($this->epub, $xhtml);
+		$expected = '<p class="c735"><span class="c736"><span class="koboSpan" id="kobo.1.1">複数の文章</span></span></p>';
+		$expected = '<body>' . $expected . '</body>';
+		$this->assertEquals($expected, $test);
+	}
+	
+	public function test_add_KoboSpan_ruby()
+	{
+		$ref = new ReflectionMethod('Model_Epub', 'add_KoboSpan');
+		$ref->setAccessible(true);
+	
+		$xhtml = '<ruby><span class="c527">漢字</span><rt><span class="c528">ルビ</span></rt></ruby>';
+		$xhtml = '<body>' . $xhtml . '</body>';
+		$test = $ref->invoke($this->epub, $xhtml);
+		$expected = '<ruby><span class="c527"><span class="koboSpan" id="kobo.1.1">漢字</span></span><rt><span class="c528"><span class="koboSpan" id="kobo.2.1">ルビ</span></span></rt></ruby>';
+		$expected = '<body>' . $expected . '</body>';
+		$this->assertEquals($expected, $test);
+	}
+	
+	public function test_add_KoboSpan_a()
+	{
+		$ref = new ReflectionMethod('Model_Epub', 'add_KoboSpan');
+		$ref->setAccessible(true);
+	
+		$xhtml = '<a href="R4524797354500_0011.xhtml#R4524797354500_0009_No00001">見出し</a>';
+		$xhtml = '<body>' . $xhtml . '</body>';
+		$test = $ref->invoke($this->epub, $xhtml);
+		$expected = '<a href="R4524797354500_0011.xhtml#R4524797354500_0009_No00001"><span class="koboSpan" id="kobo.1.1">見出し</span></a>';
+		$expected = '<body>' . $expected . '</body>';
+		$this->assertEquals($expected, $test);
+	}
+	
+	public function test_add_KoboSpan_file()
 	{
 		$file = APPPATH . 'tests/fixture/k12121626.html';
 		
-		$ref = new ReflectionMethod('Model_Epub', 'add_kepub_span');
+		$ref = new ReflectionMethod('Model_Epub', 'add_KoboSpan');
 		$ref->setAccessible(true);
-		$test = $ref->invoke($this->epub, $file);
+		
+		$xhtml = file_get_contents($file);
+		$test = $ref->invoke($this->epub, $xhtml);
 		$expected = file_get_contents($file . '.expected');
 		$this->assertEquals($expected, $test);
 	}

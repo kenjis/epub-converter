@@ -160,7 +160,8 @@ class Model_Epub
 			// for debugging
 			copy($file, $file . '.orig');
 			
-			$content = $this->add_kepub_span($file);
+			$xhtml = file_get_contents($file);
+			$content = $this->add_koboSpan($xhtml);
 			file_put_contents($file, $content);
 		}
 		
@@ -217,9 +218,8 @@ class Model_Epub
 		$zip->close();
 	}
 	
-	protected function add_kepub_span($file)
+	protected function add_koboSpan($xhtml)
 	{
-		$xhtml = file_get_contents($file);
 		$content = '';
 		$para = 1;
 		
