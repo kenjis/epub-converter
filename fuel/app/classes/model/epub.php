@@ -9,6 +9,8 @@
  */
 class Model_Epub
 {
+	public $debug = false;  // debug mode
+	
 	protected $filename;
 	protected $prefix;  // prefix to kepub filename
 	protected $epub_dir;
@@ -65,7 +67,7 @@ class Model_Epub
 		}
 		else
 		{
-			mkdir($this->work_dir);
+			mkdir($this->work_dir, 0777, true);
 		}
 		
 		$unzip = new Unzip();
@@ -176,6 +178,55 @@ class Model_Epub
 		}
 		
 		$this->create_zip();
+		
+		if ( ! $this->debug)
+		{
+			File::delete_dir($this->work_dir);
+		}
+	}
+	
+	/**
+	 * Download a KEPUB file and delete it
+	 */
+	public function download()
+	{
+		$info = File::file_info($this->kepub_dir . '/' . $this->get_kepub_filename());
+		$class = 'File';
+		
+		Event::register('shutdown', function () use ($info, $class) {
+			if ( ! $file = call_user_func(array($class, 'open_file'), @fopen($info['realpath'], 'rb'), LOCK_SH))
+			{
+				throw new \FileAccessException('Filename given could not be opened for download.');
+			}
+			
+			while (ob_get_level() > 0)
+			{
+				ob_end_clean();
+			}
+			
+			ini_get('zlib.output_compression') and ini_set('zlib.output_compression', 0);
+			! ini_get('safe_mode') and set_time_limit(0);
+			
+			header('Content-Type: '.$info['mimetype']);
+			header('Content-Disposition: attachment; filename="'.$info['basename'].'"');
+			header('Content-Description: File Transfer');
+			header('Content-Length: '.$info['size']);
+			header('Content-Transfer-Encoding: binary');
+			header('Expires: 0');
+			header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+			
+			while( ! feof($file))
+			{
+				echo fread($file, 2048);
+			}
+			
+			call_user_func(array($class, 'close_file'), $file);
+			
+			// remove generated kepub file
+			File::delete_dir($info['dirname']);
+		});
+		
+		exit;
 	}
 	
 	protected function resize_image($file)
@@ -201,6 +252,11 @@ class Model_Epub
 		// create Zip file
 		$zip = new ZipArchive();
 		$filename = $this->kepub_dir . '/' . $this->get_kepub_filename();
+		
+		if ( ! file_exists($this->kepub_dir))
+		{
+			mkdir($this->kepub_dir, 0777, true);
+		}
 		
 		if ($zip->open($filename, ZIPARCHIVE::CREATE) !== true)
 		{

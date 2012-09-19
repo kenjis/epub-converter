@@ -58,6 +58,23 @@ EOL;
 			}
 		}
 	}
+	
+	public static function set_permission()
+	{
+		$writable_paths = array(APPPATH . 'tmp/epub');
+		
+		foreach ($writable_paths as $path)
+		{
+			if (@chmod($path, 0777))
+			{
+				\Cli::write("\t".'Made writable: '.$path, 'green');
+			}
+			else
+			{
+				\Cli::write("\t".'Failed to make writable: '.$path, 'red');
+			}
+		}
+	}
 }
 
 /* End of file tasks/epub.php */
