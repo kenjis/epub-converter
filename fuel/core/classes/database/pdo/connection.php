@@ -58,7 +58,7 @@ class Database_PDO_Connection extends \Database_Connection
 			'username'   => null,
 			'password'   => null,
 			'persistent' => false,
-			'compress'	 => true,
+			'compress'   => false,
 		));
 
 		// Clear the connection parameters for security

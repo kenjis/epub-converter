@@ -15,6 +15,7 @@ return array(
 		'type'        => 'pdo',
 		'connection'  => array(
 			'persistent' => false,
+			'compress'   => false,
 		),
 		'identifier'   => '`',
 		'table_prefix' => '',
@@ -27,6 +28,7 @@ return array(
 		'default' => array(
 			'hostname'  => '127.0.0.1',
 			'port'      => 6379,
+			'timeout'	=> null,
 		)
 	),
 
