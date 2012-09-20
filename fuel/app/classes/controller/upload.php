@@ -38,6 +38,8 @@ class Controller_Upload extends Controller
 		$results = Upload::get_files();
 		$file = $results[0]['saved_as'];
 		
+		static::log('uploaded: ' . $file, __METHOD__);
+		
 		$epub = $this->create_kepub($file);
 		
 		// remove uploaded epub file
@@ -61,5 +63,16 @@ class Controller_Upload extends Controller
 		$epub->build_kepub();
 		
 		return $epub;
+	}
+	
+	protected static function log($msg, $method)
+	{
+		$uri   = \Input::uri();
+		$ip    = \Input::ip();
+		$agent = \Input::user_agent();
+	
+		$msg = $msg . ' [' . $ip . ' "' . $agent . '"]';
+	
+		\Log::write('EPUB', $msg, $method);
 	}
 }
