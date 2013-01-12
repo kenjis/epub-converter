@@ -16,7 +16,7 @@ This was created to read EPUB files from Tatsu-zine.com http://tatsu-zine.com/.
 
 2. Run command
 
-	$ php oil r epub:generate_kepub
+	$ php oil r epub:create_kepub
 
 	kepub files are generated in "files/kepub" folder.
 
